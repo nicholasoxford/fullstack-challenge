@@ -1,36 +1,44 @@
-import { useState, Component, FC, ReactElement, useEffect } from 'react';
-import { parseCommands, figResponse, defaultRes, parseTypes } from '../parse';
-import { Card } from '../components/input';
-class TopLevelDetail extends Component<{}, parseTypes> {
-  render() {
-    return <h1>{this.props.input?.name}</h1>;
-  }
-}
+/* eslint-disable react/no-unescaped-entities */
+import { useState } from 'react';
+import { parseCommands } from '../parse';
+import { defaultRes, parseTypes, propParse } from "../parseTypes";
+import { ArgumentInfo, OptionsInfo, SubCommandInfo } from '../components/ArgumentInfo';
+import { InputInfo } from '../components/InputInfo';
+import React from 'react';
+import { Button } from '@mui/material';
+import { useForm, Controller } from 'react-hook-form';
+import { styled } from '@mui/material/styles';
+import TextField from '@mui/material/TextField';
+import { makeStyles } from '@mui/styles';
+import { ErrorInfo } from '../components/ErrorInfo';
+import { CommandErrorInfo } from '../components/CommandErrorInfo';
+import { errorMessage } from '../types/errorMessage';
+
 
 const Home = () => {
+  // Get all of our stylings and state ready
+  const classes = useStyles();
+  const { handleSubmit, control } = useForm();
   const [input, setInput] = useState('');
-
-  const MyFunctionnalComponent: FC<parseTypes> = props => {
-    // const [title, setTitle] = useState(props.input?.name);
-    // useEffect(() => {
-    //   if (props.input?.name) debugger;
-    //   // Create an scoped async function in the hook
-    //   function anyNameFunction() {
-    //     if (props.input?.name) setTitle(props.input?.name);
-    //   }
-    //   // Execute the created function directly
-    //   anyNameFunction();
-    // }, []);
-    return <div>{props.input?.name}</div>;
-  };
-
-  var figSpec = {};
+  const [inputError, setError] = useState<errorMessage>({ command: '', error: '' });
   var command = '';
-  var commandParams = { input: { name: 'hello' } } as parseTypes;
-  commandParams.input!.name = 'blah';
-  const subscribe = async (e: { preventDefault: () => void }) => {
-    e.preventDefault(); // prevents page reload
+  const [commandParams, setCommandParams] = useState<propParse>({
+    prop: { input: { name: '', description: '' }, errors: '' } as parseTypes,
+    type: '',
+  });
 
+  // If we find an error in the bash command, we need to clear the results
+  function setErrorandClear(error: any, command: string) {
+    setError({ command: command, error: error.toString() });
+    setCommandParams({
+      prop: { input: { name: '', description: '' } } as parseTypes,
+      type: '',
+    });
+  }
+
+  // This command handles parsing, at a high level, of the entered bash command
+  // 
+  const onEnter = async () => {
     var git = {} as defaultRes;
     try {
       //check if non-empty string
@@ -43,9 +51,14 @@ const Home = () => {
           var tempCommand = commandArray[0].trim();
           if (tempCommand != command) {
             command = tempCommand;
-            const url = `https://cdn.skypack.dev/@withfig/autocomplete/build/${command}.js`;
+            const url = `https://cdn.skypack.dev/@withfig/autocomplete/build/${command.toLowerCase()}.js`;
             //TODO: error handle
-            git = await import(/* webpackIgnore: true */ url);
+            git = await import(/* webpackIgnore: true */ url)
+              .then(git => {
+                setError({ error: '', command: '' });
+                return git;
+              })
+              .catch(err => setErrorandClear(err, command));
           }
           commandArray.shift();
           // grab all other info out of command
@@ -53,43 +66,125 @@ const Home = () => {
             // handle the edge case of "hello"
             checkQuoteArray(commandArray);
           }
+          if (git.default) {
+            const parseResponse = await parseCommands(commandArray, git.default);
+            console.log(parseResponse);
+            ;
+            setCommandParams({ prop: parseResponse, type: 'command' });
 
-          commandParams = await parseCommands(commandArray, git.default);
+            if (parseResponse.errors && parseResponse.errors != "") {
 
-          console.log(commandParams);
-          debugger;
-          MyFunctionnalComponent(commandParams);
+              setError({ command: "", error: parseResponse.errors })
+            }
+          }
         }
       }
-    } catch (err) {}
+    } catch (err) { }
   };
 
   return (
-    <div className="p-8 justify-center items-center h-screen flex ">
-      <form className="flex justify-items-center w-6/12">
-        <input
-          className="bg-gray-200 shadow-inner rounded-full p-2 h-16 flex-1 "
-          id="command"
-          type="text"
-          aria-label="bash command"
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          placeholder="Enter your bash command"
+    <div className="p-8 justify-center items-center h-screen flex flex-col ">
+      <h1
+        className="font-extrabold text-transparent text-8xl bg-clip-text bg-gradient-to-r from-purple-800 to-blue-600"
+      >
+        Bashable
+      </h1>
+      {inputError.command != '' && <ErrorInfo {...inputError}></ErrorInfo> || <CommandErrorInfo {...inputError}></CommandErrorInfo>}
+
+      <form className={classes.root} onSubmit={handleSubmit(onEnter)}>
+        <Controller
+          name="command"
+          control={control}
+          defaultValue="123"
+          render={({ field: { onChange, value }, fieldState: { error } }) => (
+            <CssTextField
+              fullWidth
+              label="Enter Your Command"
+              id="custom-css-outlined-input"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              error={!!error}
+              helperText={error ? error.message : null}
+            />
+          )}
+          rules={{ required: 'A command is required' }}
         />
-        <button
-          className="bg-blue-600 hover:bg-blue-700 rounded-l ml-2 h-12 duration-300 text-white shadow p-2 "
-          type="submit"
-          onClick={subscribe}
-        >
-          Enter
-        </button>
-        <MyFunctionnalComponent {...commandParams}></MyFunctionnalComponent>
+
+        <div>
+          <Button type="submit" variant="contained" color="primary">
+            Explain
+          </Button>
+        </div>
       </form>
+      <div className="space-y-6 mt-4">
+        <InputInfo {...commandParams}></InputInfo>
+        {commandParams.prop.subcommand &&
+          commandParams.prop.subcommand?.map(obj => (
+            // eslint-disable-next-line react/jsx-key
+            <SubCommandInfo {...obj}></SubCommandInfo>
+          ))}
+        {commandParams.prop.options &&
+          commandParams.prop.options?.map(obj => (
+            // eslint-disable-next-line react/jsx-key
+            <OptionsInfo {...obj}></OptionsInfo>
+          ))}
+
+        {commandParams.prop.argument &&
+          commandParams.prop.argument?.map(obj => (
+            // eslint-disable-next-line react/jsx-key
+            <ArgumentInfo {...obj}></ArgumentInfo>
+          ))}
+      </div>
     </div>
   );
 };
 
 export default Home;
+
+
+
+const CssTextField = styled(TextField)({
+  width: '100vw',
+  '& label.Mui-focused': {
+    color: '#1E40AF',
+  },
+  '& .MuiInput-underline:after': {
+    borderBottomColor: '#3B82F6',
+  },
+  '& .MuiOutlinedInput-root': {
+    '& fieldset': {
+      borderColor: '#3B82F6',
+    },
+    '&:hover fieldset': {
+      borderColor: '#1D4ED8',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#1E40AF',
+    },
+  },
+});
+
+
+const useStyles = makeStyles({
+  root: {
+    width: '100vw',
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: '20px',
+
+    '& .MuiTextField-root': {
+      margin: '10px',
+      'min-width': '300px',
+      'max-width': '1000px',
+    },
+    '& .MuiButtonBase-root': {
+      margin: '5px',
+    },
+  },
+});
+
 function checkQuoteArray(commandArray: string[]) {
   var quoteElements = commandArray.filter(x => x.includes(`"`));
   var indexStart: number = -100;

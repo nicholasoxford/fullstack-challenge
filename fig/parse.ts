@@ -1,3 +1,4 @@
+import { figResponse, parseTypes, renderOptions, renderArg, renderSubcommand } from './parseTypes';
 import * as figTypes from './types/cheat';
 
 export async function parseCommands(input: string[], figResponse: figResponse): Promise<parseTypes> {
@@ -7,6 +8,7 @@ export async function parseCommands(input: string[], figResponse: figResponse): 
       name: figResponse.name,
       description: figResponse.description,
     },
+    errors: '',
     options: [],
     subcommand: [],
     argument: [],
@@ -14,14 +16,19 @@ export async function parseCommands(input: string[], figResponse: figResponse): 
 
   // input is already tokenized, so we iterate through it
   for (const [index, value] of input.entries()) {
+    ;
+    if (params.errors != "") {
+
+      return params
+    }
     // checkNextElement returns either the next element or null.
     // Helps with error checking
     const next = checkNextElement(input, index);
 
     // if there is a -, we can assume it's a flag
     // checkForOptions also has this check, but we s
-
     const res = checkForOptions(value, figResponse.options);
+
     if (res) {
       var renderOptions = {
         figArg: res,
@@ -40,24 +47,54 @@ export async function parseCommands(input: string[], figResponse: figResponse): 
     } else if (next) {
       var subCommand = checkSubcommands(value, input, figResponse.subcommands, index);
       if (subCommand) {
-        params.subcommand?.push(subCommand);
-        input.splice(index, index + 1);
-      } else {
-        var argument = addArgument(value, figResponse.args);
-        // If it is not a flag, or subcommand, it is an argument!
-        if (argument) {
-          params.argument?.push(argument);
-        }
+        addSubCommand(next, index);
+      }
+      else {
+            
+        params.errors = "Mhmmmm... Something doesn't seem right, can you check your command?"
       }
     } else if (value) {
-      var argument = addArgument(value, figResponse.args);
-      // If it is not a flag, or subcommand, it is an argument!
-      if (argument) {
-        params.argument?.push(argument);
+      ;
+      var subCommand = checkSubcommands(value, input, figResponse.subcommands, index);
+        if (subCommand) { addSubCommand(next, index);}
+        else {
+          if (figResponse.args) {
+            var argument = addArgument(value, figResponse.args);
+            // If it is not a flag, or subcommand, it is an argument!
+  
+            if (argument) {
+              params.argument?.push(argument);
+            }
+          }
+          else {
+            
+            params.errors = "Mhmmmm... Something doesn't seem right, can you check your command?"
+          }
+        }
       }
+    
+    } 
+  return params;
+
+  function addSubCommand(next: string, index: number) {
+    params.subcommand?.push(subCommand);
+    if (subCommand.subcommand.options && next) {
+      const subCommandOption = checkForOptions(next, subCommand.subcommand.options);
+
+      if (subCommandOption && params.subcommand) {
+
+        params.subcommand[0].children.options?.push({
+          figArg: subCommandOption,
+          arguments: { figArg: {} },
+        } as renderOptions);
+        input.splice(index, index + 3);
+
+      }
+    } else {
+      input.splice(index, index + 2);
+
     }
   }
-  return params;
 }
 export function checkNextElement(array: string[], currentIndex: number) {
   var t = array[currentIndex + 1] ?? null;
@@ -72,6 +109,7 @@ export function addArgument(value: string, figArgs: SingleOrArray<figTypes.Arg>)
     figArg: figArgs,
     value: value,
   } as renderArg;
+
   return argument;
 }
 
@@ -83,6 +121,7 @@ export function checkSubcommands(
 ) {
   var optionChecked = false;
   var sub: figTypes.Subcommand = subCommandList?.filter(x => x.name == value)[0];
+  ;
   // if our next token is an argument
   if (sub) {
     var subCommand = {
@@ -100,6 +139,7 @@ export function checkSubcommands(
         }
       }
       sub.options;
+
       nextInput.splice(currentIndex++, tempNumber);
       var tempNext = checkNextElement(nextInput, currentIndex - 1);
       if (tempNext && sub.options) {
@@ -109,10 +149,15 @@ export function checkSubcommands(
           arguments: { figArg: {} },
         } as renderOptions;
         subCommand.children.options?.push(renderOptions);
+        nextInput.splice(currentIndex, tempNumber + 2)
         optionChecked = true;
       }
+    } else if (sub.args && sub.args.name != "") {
+      let tempNumber = currentIndex;
+      
     }
     if (sub.options?.length) {
+      ;
       var checkNext = checkNextElement(nextInput, currentIndex);
       if (checkNext) {
         const subFlags = checkForOptions(nextInput[currentIndex + 1], sub.options);
@@ -131,13 +176,18 @@ export function checkSubcommands(
             subCommand.children.options?.push(renderOptions);
           }
         } else {
+
           var argument2 = addArgument(nextInput[currentIndex + 1], sub.args || {});
+          if(argument2)
           subCommand.children.argument?.push(argument2);
+      nextInput.splice(currentIndex + 1, currentIndex + 2);
+
         }
       }
     }
     return subCommand;
   }
+  return;
 }
 
 // I can't think of reason why I would need both of these, but
@@ -163,52 +213,6 @@ export function checkForOptions(value: string, flags: figTypes.Option[]): figTyp
 
 export function isString(value: any) {
   return typeof value === 'string' || value instanceof String;
-}
-
-// This is what our parseCommands function will return
-// commandInfo includes the command (i.e. git in git push)
-// and the url
-export interface parseTypes {
-  input?: figResponseInfo;
-  options?: renderOptions[];
-  subcommand?: renderSubcommand[];
-  argument?: renderArg[];
-}
-export interface figResponseInfo {
-  description: string;
-  name: string;
-}
-export interface commandInfo {
-  url?: string;
-  bashCommand?: string;
-}
-export interface renderOptions {
-  figArg?: figTypes.Option;
-  arguments?: renderArg;
-}
-export interface renderArg {
-  figArg?: SingleOrArray<figTypes.Arg>;
-  value?: string;
-}
-export interface renderSubcommand {
-  subcommand: figTypes.Subcommand;
-  children: parseTypes;
-}
-export interface args {
-  options?: string;
-  arguments?: string;
-}
-export interface figResponse {
-  description: string;
-  name: string;
-  options: figTypes.Option[];
-  subcommands: figTypes.Subcommand[];
-  args: figTypes.Arg;
-  additionalSuggestions?: figTypes.Suggestion[] | string[];
-}
-
-export interface defaultRes {
-  default: figResponse;
 }
 
 export default parseCommands;
