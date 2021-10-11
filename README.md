@@ -1,177 +1,51 @@
-# Fullstack Typescript Challenge
+# Fig Coding Challenge
 
-👋  Hey! We are glad you are excited about joining [Fig](https://fig.io).
+October 2021
 
+![design3](https://github.com/nicholasoxford/fullstack-challenge/blob/main/123.png)
 
-## The challenge
-Build a web app similar to [Explain Shell](https://explainshell.com/explain?cmd=git+push+origin+master) using data from [Fig's completion specs](https://github.com/withfig/autocomplete)
+## Read Through
 
-This challenge asks you to build an app very similar to Fig's [autocomplete app](https://fig.io): It takes a string input, tokenizes it, reconciles it to one of our declarative [completion specs](https://fig.io/docs/getting-started/first-completion-spec), and renders an output. In this case of the autocomplete app, the output is a list of autocomplete suggestions. In the case of this challenge, the output should be a list of tokens (subcommands, options, arguments) with descriptive information for each.
+> Build an app similar to Fig's autocomplete
 
-## Overview
+Think about typing a command line argument
+First thought is a CLI argument is an array of strings
 
-Your web app should do the following:
+I've never heard of skypack - neat.
 
-1. **Parse a string**: Allow the user to input free text. Split this free text into
-a sequence of tokens delimited by white space. _Note_: quoted text should be
-treated as single token e.g. `echo "hello world"` has only two tokens.
+Annotating will be an interesting challenging
 
-    You can make the following assumptions about the user input:
+I will begrudgingly use NextJS. I am better with Vue3 w/ comp api
 
-    - The string will not contain nested quotes (e.g. `echo "hello \"world\""`).
-    - The string will be a basic bash command where the first token is the name of a CLI tool. 
-      You don't need to worry about command substitution, file redirection, pipes, boolean operators, or
-      really any shell constructs besides single and double quoted strings.
-    - Assume that all arguments are mandatory. Arguments like `git push` take two 
-    [optional arguments](https://fig.io/docs/reference/arg#isoptional), but unless you are doing the challenge implementation of the parser at the bottom, just  disregard the `isOptional: true` and treat these arguments as mandatory.
+## Thought process
 
-    See the example inputs section below for the specific cases you should support.
+Wow - this was a pretty fun project. I hoped to keep better notes throughout the process, but I think that would've messed up the flow I had going. Looking forward to getting feedback from y'all on how I can improve my repo.
 
-2. **Load up a completion spec**: Load up the completion spec specified by the first token, using
-[Skypack](https://www.skypack.dev/) and [dynamic
-imports](https://javascript.info/modules-dynamic-imports#the-import-expression)
+This was also my first ever React app. I knoww _things_ about React from Twitter, but I've never actually dove in and started using something like useState. I work in Vue fulltime, and while I could've finished the frontend in about 40% of the time, it's good to chew glass and learn the dang technology.
 
-Completion specs are Fig's tree-like declarative schema for describing the
-    structure of a CLI tool. They are documented at great length
-    [here](https://fig.io/docs/handbook/completion-spec-rules) and
-    [here](https://fig.io/docs/concepts/cli-skeleton) and many examples
-    can be found in our [repo of public
-    specs](https://github.com/withfig/autocomplete/blob/master/dev/ls.ts)
+At certain points, my React code was cleaner. I had a more atomic setup, but with the complexity came compromises. I could've continued to hand-code css in Tailwinds, Which I will get to in a second, but I knew it would be helpful to import a component library. Once I started using the component library, it became harder to access state, and the only way I could figure out how to get it working was to bring some components back to index.tsx.
 
-The following shows how to dynamically load up the `ls` spec from our public repo:
+On Tailwinds - I don't know how you feel about Tailwinds, but I am very split on it. While for things like a weekend project, Tailwinds is perfect, I feel like the syntax isn't collab-friendly. I get it, you can learn it quickly, but it just doesn't feel right. If I was going to plan a little bit better, I would've used purely material UI from the start and just ignored Tailwinds. All though it came in handy in a few places.
 
-```javascript
-const url = "https://cdn.skypack.dev/@withfig/autocomplete/build/ls.js"
-const git = await import(/* webpackIgnore: true */ url);
-```
+Timewise, I probably spent a day and a quarter worth of (mythical) man-hours. The parser was a challenge at first. I've never wrote a parser, and merely figuring out how I was going to format the response Object took a bit of soul searching. This is where Typescript was honestly so helpful. Time after time it saved my butt when writing the parsing code. Furthermore, structuring that response in TS, from the git-go, actually made it easier to get incremental towards as time went on. Oh, I need to change the response from a single string to an array of strings - here are all the places this will impact. I used to think that typescript would be a hindrance in weekend projects, nope.
 
-3. **Annotate each token** with information from the completion spec and
-**visualize** the annotations in an appealing way that could ultimately be a live Fig product.
+Other design decisions. If I had more time I would make the components more atomic. CLEARLY, I could improve the file ArgumentInfo.tsx, the three components are the same thing. Yet - because of my lack of React skills I was having trouble figuring out small random things. Although, as I am sitting here typing I just figured out how I could use typescript to dynamically pass in titles.
 
-    You can take inspiration for visualization from [Explain
-    Shell](https://explainshell.com/explain?cmd=git+push+origin+master) but
-    please don't copy this exactly -- this is an opportunity to show off
-    your creativity. It is up to you what information from the completion spec you include
-    in the annotation, but a good starting point is the `description` field.
+I would've also spent more time on CSS. I think this is purely a fact of learning React on the fly. There are things like how Command, SubCommand, Argument titles aren't all aligned at the end. I would also include more colorful linking between the input and cards. The cards deserve some love too, I would switch them over to Material UI card. I am also kept running into this weird warning case where makeStyles is sending over a different className id than what the client knows, but again it seems solvable. I just don't have the time.
 
-    Finally, note that Fig's completion spec often don't have particularly good descriptions 
-    for arguments. 
+Edge case-wise, my number one goal was to handle all of the test cases. I did that! If I knew the front end was going to take up so much time, I probably would've gone back and made the simplest front end possible, and focus on the parser. However, I think working through the form allowed me to think of edge cases that I otherwise wouldn't. I also know my code quality could be higher. If I woke up tomorrow, drank a cup of coffee, and spent 45 minutes to an hour, I could do some great refactoring. However, it feels right to get this in tonight. I love shipping code.
 
+Key takeaways. 1) Parsing the command line is a trip worth taking. 2) Typescript is always the way 3) This is just the beginning of my React journey.
 
+I also kept it in Typescript strict mode up until I ran npm run build. This was because of a few weird TS errors like `Type instantiation is excessively deep and possibly infinite`. I could only spend so much time on TS errors before other things became more important.
 
-#### Languages and frameworks
-The web app should be written in **Next.js or React** and must use **Typescript**. Besides that, you
-may use whatever packages and libraries you'd like to achieve the final result.
+While I didn't nail the frontend, you can see that I largerly followed the mental model I made day of.
 
+Sadly - I realized I didn't write Test :(
 
-#### Example inputs
+Again a by product of not knowing React & limiting my time I put into this to best reflect my skills, but still. I could've written atleast one! I'm also sure my variable naming is subpar, but I often look to my coworkers for naming ideas. It's not my strongest skill. The cool thing is you can diss the crap out of my code and I truly won't care. I see the end goal as the only important one. Oh I missed somehting? Shocker!
 
-Your app should handle the following inputs:
-* `git push origin master --all`
-* `ls -a -l -p`
-* `echo "hello world"`
-* `git commit -m "hello world"`
-* `git commit --message "hello world"`
-* `npm run dev`
-* `npm install -g react`
-
-
-__To be abundantly clear__, we expect you to correctly tokenize the input then annotate it with the correct description. This includes annotating arguments. e.g. you should provide an annotation for the `"hello world"` part of `echo "hello world"`.
-
-
-## Deliverables
-
-When you're ready to submit, please create a zip file of the below and upload it to the following form: https://airtable.com/shrFwTaQFMqvzKYLX
-
-1. A Next.js or React app written in Typescript that implements the functionality detailed above.
-2. A **README.md**. Please discuss your design decisions, how you handled
-  (or decided not to handle) various edge cases, any product ideas you have
-  to make this a more useful product, and what would you would do if you
-  had more time.
-
-
-We will run your project locally as follows:
-
-```bash
-unzip your_submission.zip
-cd your_submission
-npm ci
-npm run start
-```
-
-So you should include a `package.json` and `package-lock.json` but do not
-need to include `node_modules/` in the zip file. Please make sure your
-submission will run if we follow these steps.
-
-
-## Evaluation Criteria
-
-PLEASE READ THIS SECTION AND THE FOCUS AREA SECTION CAREFULLY. EMAIL IF YOU HAVE QUESTIONS
-
-We will evalute your project based on all of the following critera. 
-
-1. **Code quality & design**
-    1. Does the app use modern paradigms for typescript and web app frameworks?
-    2. Is the code easy to follow? For instance, do you have good naming conventions, comments, component structure, folder hierarchy etc.
-    3. Do you have tests? Do these tests assess behaviour rather than implementation([link 1](https://testing.googleblog.com/2013/08/testing-on-toilet-test-behavior-not.html), [link2](https://teamgaslight.com/blog/testing-behavior-vs-testing-implementation)) 
-2. **Product**
-    1. Does you app look and feel polished?
-    2. Do you handle errors gracefully?
-3. **Parser**
-    1. Does it take the test inputs we gave and render the correct output for each token?
-    2. Does it handle incorrect inputs / edge cases?
-4. **Documentation / README:**
-    1. Does your readme describe and justify your thought process, code functionality, and design choices?
-    2. What other options were explored, if any?
-
-When evaluating, we will apply the most weight to the **code quality and design** and the section relevant to your chosen **focus area**. This means your code quality should be really good either way, you should still have a good readme, you should base line have a good product and parser, and then you should put more time and effort into your chosen focus (as outlined below).
-
-## Focus Area
-
-In order to show off your strengths, we would like you to pick a focus area in this challenge. The two focus areas are **Product** and **Parser**. When submitting, you will be asked which focus you chose so we can evaluate you accordingly.
-
-**⭐️ Product**
-
-If you choose **Product**, we expect you to go above and beyond with your UX and UI. You should do the minimum needed for the parser to work. Otherwise, the app should look and feel production ready. It should show your own flare.
-
-**⭐️ Parser**
-
-If you choose **Parser**, we expect you to go above and beyond with your parser implementation. You likely should use an AST (or some other smart representation). You should at least account for the easier edge cases below, maybe some of the hard ones, and build your parser in such a way that it could account for future edge cases.
-* Easier edge cases
-    * `echo hello world abc def` (variadic arguments)
-    * `git add index.js deploy.sh package.json` (variadic arguments)
-    * `git push origin --all` (the branch is not included as it is optional and `--all` is treated as an option)
-    * `git push origin --this-is-a-branch --all` (the branch starts with a `--`)
-    * `ls -alP` (chained options)
-    * `git commit ---message="hello world"` (argument to long option using equals
-* Harder edge cases
-    * `git commit -mmsg` (short option were one takes an argument)
-    * `git commit -ammsg` (chained options were one takes an argument)
-    * `git add index.js deploy.sh package.json --refresh` (variadic arguments that can be stopped by an option)
-    * `echo -n hello world -n` (variadic arguments that cannot be stopped by an option)
-    * `ls index.js -` (use a single dash `-` to use stdin instead of a file name - read more [here](https://unix.stackexchange.com/questions/16357/usage-of-dash-in-place-of-a-filename))
-    *  `grep -- -v file` (use a double dash `--` to indicate the end of options and the start of arguments - read more [here](https://unix.stackexchange.com/questions/11376/what-does-double-dash-mean))
-    * `git sfsfsf` (Invalid subcommand, option, or arg)
-
-You can see a bunch more examples here: http://docopt.org/
-
-
-**Why do we have focus areas?**
-
-Some programmers are fantastic at design. Some are fantastic at logic and traditional computer science. The best are talented at both. We would like you to play to your strengths.
-
-## Finally
-1. This challenge shouldn't take longer than a day to finish, likely less. Let us know if takes more or less so we can recalibrate our expectations.
-
-2. If you have **ANY** questions, _please reach out_ (email brendan, matt, or sean @fig.io OR message us in our [Discord](https://fig.io/community) community). You are not annoying us. We want you to succeed. You get no points for guessing. Best to clarify early if you are unsure of something. We want to make sure this
-is a realistic assessment of your skills as a developer. In the real world we'd be available as your teammates if you were blocked or felt stuck!
-
-
-
-
-
-
-
-
-
-
+![design](https://github.com/nicholasoxford/fullstack-challenge/blob/main/Untitled_Artwork.jpg)
+![design1](https://github.com/nicholasoxford/fullstack-challenge/blob/main/Untitled_Artwork_1.jpg)
+![design2](https://github.com/nicholasoxford/fullstack-challenge/blob/main/Untitled_Artwork_2.jpg)
+![design3](https://github.com/nicholasoxford/fullstack-challenge/blob/main/Untitled_Artwork_3.jpg)

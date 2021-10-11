@@ -70,7 +70,7 @@ const Home = () => {
             const parseResponse = await parseCommands(commandArray, git.default);
             console.log(parseResponse);
             ;
-            setCommandParams({ prop: parseResponse, type: 'command' });
+            setCommandParams({ prop: parseResponse, type: 'Command' });
 
             if (parseResponse.errors && parseResponse.errors != "") {
 
@@ -98,7 +98,7 @@ const Home = () => {
           defaultValue="123"
           render={({ field: { onChange, value }, fieldState: { error } }) => (
             <CssTextField
-              fullWidth
+
               label="Enter Your Command"
               id="custom-css-outlined-input"
               value={input}
@@ -172,7 +172,7 @@ const useStyles = makeStyles({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: '20px',
+    padding: '10px',
 
     '& .MuiTextField-root': {
       margin: '10px',
