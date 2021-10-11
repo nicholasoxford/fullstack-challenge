@@ -45,6 +45,8 @@ Sadly - I realized I didn't write Test :(
 
 Again a by product of not knowing React & limiting my time I put into this to best reflect my skills, but still. I could've written atleast one! I'm also sure my variable naming is subpar, but I often look to my coworkers for naming ideas. It's not my strongest skill. The cool thing is you can diss the crap out of my code and I truly won't care. I see the end goal as the only important one. Oh I missed somehting? Shocker!
 
+I also couldn't get npm install -g to work, as the fig spec didn't have the subcommand install on it. 
+
 ![design](https://github.com/nicholasoxford/fullstack-challenge/blob/main/Untitled_Artwork.jpg)
 ![design1](https://github.com/nicholasoxford/fullstack-challenge/blob/main/Untitled_Artwork_1.jpg)
 ![design2](https://github.com/nicholasoxford/fullstack-challenge/blob/main/Untitled_Artwork_2.jpg)
