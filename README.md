@@ -18,6 +18,9 @@ Annotating will be an interesting challenging
 I will begrudgingly use NextJS. I am better with Vue3 w/ comp api
 
 ## Thought process
+```sh
+cd fig && npm ci && npm run build && npm run start
+```
 
 Wow - this was a pretty fun project. I hoped to keep better notes throughout the process, but I think that would've messed up the flow I had going. Looking forward to getting feedback from y'all on how I can improve my repo.
 
