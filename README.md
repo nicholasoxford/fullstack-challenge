@@ -8,7 +8,7 @@ October 2021
 
 > Build an app similar to Fig's autocomplete
 
-Think about typing a command line argument
+Thinking about typing a command line argument
 First thought is a CLI argument is an array of strings
 
 I've never heard of skypack - neat.
